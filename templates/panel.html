@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SimultanePro</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #060606;
+    --surface: #0f0f0f;
+    --surface2: #161616;
+    --border: rgba(255,255,255,0.06);
+    --text: #f2efe9;
+    --text-dim: rgba(242,239,233,0.4);
+    --text-sub: rgba(242,239,233,0.15);
+    --gold: #c8a96a;
+    --gold-dim: rgba(200,169,106,0.12);
+    --green: #3ddc84;
+    --red: #f47070;
+    --panel-w: 360px;
+    --font-size: 70px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'Barlow',sans-serif; height:100vh; overflow:hidden; display:flex; flex-direction:column; }
+
+  /* TOP BAR */
+  #topbar { height:52px; display:flex; align-items:center; justify-content:space-between; padding:0 28px; border-bottom:1px solid var(--border); background:rgba(6,6,6,0.97); flex-shrink:0; z-index:20; }
+  #tb-left { display:flex; align-items:center; gap:10px; }
+  #tb-text { font-family:'Barlow Condensed',sans-serif; font-size:14px; font-weight:700; letter-spacing:0.16em; text-transform:uppercase; color:var(--text-dim); }
+  #tb-powered { font-family:'Barlow Condensed',sans-serif; font-size:14px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:var(--text-dim); opacity:0.5; }
+  #tb-right { display:flex; align-items:center; gap:12px; }
+  #status-pill { display:flex; align-items:center; gap:7px; padding:5px 12px; border-radius:20px; border:1px solid var(--border); background:rgba(255,255,255,0.03); }
+  #status-dot { width:6px; height:6px; border-radius:50%; background:var(--text-sub); transition:all 0.3s; flex-shrink:0; }
+  #status-dot.live { background:var(--green); box-shadow:0 0 8px rgba(61,220,132,0.6); animation:blink 2s ease-in-out infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  #status-label { font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-dim); font-weight:400; white-space:nowrap; }
+  #vol-bars { display:flex; gap:2px; align-items:flex-end; height:16px; margin-left:6px; }
+  .vb { width:3px; border-radius:2px; background:var(--border); transition:height 0.08s, background 0.2s; }
+  .vb.on { background:var(--gold); }
+
+  /* STAGE */
+  #stage { flex:1; position:relative; overflow:hidden; transition:padding-right 0.45s cubic-bezier(0.4,0,0.2,1); }
+  #stage.shifted { padding-right:var(--panel-w); }
+  #stage::before { content:''; position:absolute; top:0; left:0; right:0; height:100px; background:linear-gradient(to bottom,var(--bg),transparent); z-index:5; pointer-events:none; }
+  #stage::after { content:''; position:absolute; bottom:0; left:0; right:0; height:80px; background:linear-gradient(to top,var(--bg),transparent); z-index:5; pointer-events:none; }
+  #scroll-area { position:absolute; inset:0; overflow-y:auto; overflow-x:hidden; padding:80px 8vw 110px; scroll-behavior:smooth; scrollbar-width:none; }
+  #scroll-area::-webkit-scrollbar { display:none; }
+  #translations { display:flex; flex-direction:column; gap:0; min-height:100%; justify-content:flex-end; }
+  .tr-item { padding:16px 0 20px; border-bottom:1px solid rgba(255,255,255,0.04); animation:enterItem 0.85s cubic-bezier(0.16,1,0.3,1) both; will-change:transform,opacity; transition:opacity 1.4s ease; }
+  .tr-item:last-child { border-bottom:none; }
+  @keyframes enterItem { from{opacity:0;transform:translateY(40px)} to{opacity:1;transform:translateY(0)} }
+  .tr-item.age-0{opacity:1} .tr-item.age-1{opacity:0.42} .tr-item.age-2{opacity:0.18} .tr-item.age-3{opacity:0.07}
+  .tr-turkish { font-family:'Barlow Condensed',sans-serif; font-size:var(--font-size); font-weight:700; line-height:1.05; color:var(--text); letter-spacing:0.01em; transition:font-size 0.2s; }
+  .tr-english { font-size:clamp(12px,1.3vw,16px); font-weight:300; color:var(--text-dim); margin-top:6px; letter-spacing:0.02em; line-height:1.5; }
+  #partial-area { position:absolute; bottom:22px; left:8vw; right:24px; z-index:6; pointer-events:none; transition:right 0.45s cubic-bezier(0.4,0,0.2,1); }
+  #stage.shifted #partial-area { right:calc(var(--panel-w) + 24px); }
+  #partial-text { font-family:'Barlow Condensed',sans-serif; font-size:clamp(16px,1.8vw,24px); font-weight:400; color:var(--text-sub); letter-spacing:0.02em; font-style:italic; }
+  #idle { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; z-index:4; transition:opacity 0.6s; }
+  #idle.gone { opacity:0; pointer-events:none; }
+  #idle-main { font-family:'Barlow Condensed',sans-serif; font-size:clamp(28px,4vw,52px); font-weight:700; color:var(--text-sub); letter-spacing:0.06em; text-transform:uppercase; }
+  #idle-sub { font-size:12px; font-weight:300; color:rgba(242,239,233,0.08); letter-spacing:0.14em; text-transform:uppercase; }
+
+  /* TOGGLE */
+  #toggle-btn { position:fixed; top:50%; right:0; transform:translateY(-50%); z-index:60; background:var(--surface); border:1px solid var(--border); border-right:none; border-radius:8px 0 0 8px; width:28px; padding:14px 0; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:6px; transition:background 0.2s, border-color 0.2s, right 0.45s cubic-bezier(0.4,0,0.2,1); }
+  #toggle-btn.shifted { right:var(--panel-w); }
+  #toggle-btn:hover { background:var(--gold-dim); border-color:rgba(200,169,106,0.25); }
+  #toggle-chevron { width:14px; height:14px; color:var(--text-dim); transition:transform 0.4s, color 0.2s; }
+  #toggle-btn.shifted #toggle-chevron { transform:rotate(180deg); }
+  #toggle-btn:hover #toggle-chevron { color:var(--gold); }
+  #toggle-txt { font-size:8px; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-sub); writing-mode:vertical-rl; transform:rotate(180deg); }
+
+  /* PANEL */
+  #panel { position:fixed; top:0; right:0; width:var(--panel-w); height:100vh; background:var(--surface); border-left:1px solid var(--border); transform:translateX(100%); transition:transform 0.45s cubic-bezier(0.4,0,0.2,1); z-index:50; display:flex; flex-direction:column; overflow:hidden; }
+  #panel.open { transform:translateX(0); }
+  .p-head { padding:18px 22px 14px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+  .p-title { font-family:'Barlow Condensed',sans-serif; font-size:15px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-dim); }
+  .p-close { width:26px; height:26px; border:1px solid var(--border); border-radius:5px; background:transparent; cursor:pointer; color:var(--text-dim); display:flex; align-items:center; justify-content:center; transition:all 0.2s; }
+  .p-close:hover { border-color:rgba(200,169,106,0.4); color:var(--gold); }
+  .p-body { flex:1; overflow-y:auto; scrollbar-width:thin; }
+  .p-body::-webkit-scrollbar { width:3px; }
+  .p-body::-webkit-scrollbar-thumb { background:var(--border); }
+  .p-section { padding:16px 22px; border-bottom:1px solid var(--border); }
+  .p-section:last-child { border-bottom:none; }
+  .s-label { font-size:9px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase; color:var(--text-sub); margin-bottom:10px; }
+  .s-row { display:flex; gap:6px; }
+  .s-btn { flex:1; padding:9px 8px; border-radius:6px; border:1px solid var(--border); background:transparent; color:var(--text-dim); font-family:'Barlow Condensed',sans-serif; font-size:13px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; cursor:pointer; transition:all 0.18s; text-align:center; }
+  .s-btn:hover:not(:disabled) { border-color:rgba(200,169,106,0.35); color:var(--text); }
+  .s-btn.on { background:var(--gold-dim); border-color:var(--gold); color:var(--gold); }
+  .s-btn:disabled { opacity:0.2; cursor:not-allowed; }
+
+  /* CUSTOM DROPDOWN */
+  .custom-select { position:relative; margin-bottom:6px; }
+  .custom-select:last-child { margin-bottom:0; }
+  .cs-selected {
+    width:100%; padding:9px 32px 9px 12px; background:var(--surface2);
+    border:1px solid var(--border); border-radius:6px; color:var(--text-dim);
+    font-size:12px; font-family:'Barlow',sans-serif; cursor:pointer;
+    display:flex; align-items:center; justify-content:space-between;
+    transition:border-color 0.2s; user-select:none;
+  }
+  .cs-selected:hover { border-color:rgba(200,169,106,0.3); color:var(--text); }
+  .cs-selected.open { border-color:rgba(200,169,106,0.4); }
+  .cs-selected.disabled { opacity:0.3; cursor:not-allowed; pointer-events:none; }
+  .cs-arrow { width:10px; height:10px; flex-shrink:0; color:var(--text-sub); transition:transform 0.2s; }
+  .cs-selected.open .cs-arrow { transform:rotate(180deg); }
+  .cs-dropdown {
+    position:absolute; top:calc(100% + 4px); left:0; right:0; z-index:200;
+    background:#1a1a1a; border:1px solid rgba(200,169,106,0.2);
+    border-radius:6px; overflow:hidden; display:none;
+    box-shadow:0 8px 32px rgba(0,0,0,0.6);
+    max-height:220px; overflow-y:auto;
+  }
+  .cs-dropdown.open { display:block; animation:ddOpen 0.15s ease; }
+  @keyframes ddOpen { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+  .cs-dropdown::-webkit-scrollbar { width:3px; }
+  .cs-dropdown::-webkit-scrollbar-thumb { background:rgba(200,169,106,0.3); }
+  .cs-option {
+    padding:9px 12px; font-size:12px; font-family:'Barlow',sans-serif;
+    color:var(--text-dim); cursor:pointer; transition:background 0.12s, color 0.12s;
+    border-bottom:1px solid rgba(255,255,255,0.03);
+  }
+  .cs-option:last-child { border-bottom:none; }
+  .cs-option:hover { background:var(--gold-dim); color:var(--gold); }
+  .cs-option.selected { color:var(--gold); background:rgba(200,169,106,0.08); }
+
+  /* Font slider */
+  #font-slider { -webkit-appearance:none; appearance:none; flex:1; height:4px; border-radius:2px; background:var(--border); outline:none; cursor:pointer; accent-color:var(--gold); }
+  #font-slider::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:16px; border-radius:50%; background:var(--gold); cursor:pointer; }
+  #font-val { font-family:'Barlow Condensed',sans-serif; font-size:18px; font-weight:700; color:var(--gold); min-width:44px; text-align:right; }
+
+  /* Buttons */
+  #btn-start { width:100%; padding:13px; border-radius:7px; border:none; background:var(--gold); color:#060606; font-family:'Barlow Condensed',sans-serif; font-size:15px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; transition:all 0.18s; display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:8px; }
+  #btn-start:hover:not(:disabled) { background:#d4b47a; transform:translateY(-1px); box-shadow:0 4px 20px rgba(200,169,106,0.3); }
+  #btn-start:disabled { opacity:0.3; cursor:default; transform:none; }
+  #btn-stop { width:100%; padding:11px; border-radius:7px; border:1px solid rgba(224,48,48,0.3); background:transparent; color:var(--red); font-family:'Barlow Condensed',sans-serif; font-size:14px; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.18s; }
+  #btn-stop:hover:not(:disabled) { background:rgba(224,48,48,0.1); }
+  #btn-stop:disabled { opacity:0.2; cursor:default; }
+
+  .stats-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .stat-card { background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:6px; padding:10px 12px; }
+  .stat-num { font-family:'Barlow Condensed',sans-serif; font-size:26px; font-weight:700; color:var(--text); line-height:1; }
+  .stat-lbl { font-size:9px; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-sub); margin-top:3px; }
+  #log-area { padding:10px 14px; font-size:10px; font-family:'Barlow',sans-serif; font-weight:300; overflow-y:auto; max-height:150px; scrollbar-width:thin; }
+  #log-area::-webkit-scrollbar { width:2px; }
+  .lg { padding:2px 0; color:var(--text-sub); line-height:1.7; }
+  .lg.ok { color:rgba(61,220,132,0.6); }
+  .lg.tr { color:rgba(200,169,106,0.6); }
+  .lg.er { color:rgba(244,112,112,0.6); }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div id="tb-left">
+    <span id="tb-text">RED &amp; MORE EVENTS &nbsp;·&nbsp; SIMULTANEPRO</span>
+    &nbsp;·&nbsp;
+    <span id="tb-powered">POWERED BY VISELAB</span>
+  </div>
+  <div id="tb-right">
+    <div id="status-pill">
+      <div id="status-dot"></div>
+      <span id="status-label">Hazır</span>
+      <div id="vol-bars">
+        <div class="vb" style="height:4px" id="v1"></div>
+        <div class="vb" style="height:7px" id="v2"></div>
+        <div class="vb" style="height:5px" id="v3"></div>
+        <div class="vb" style="height:9px" id="v4"></div>
+        <div class="vb" style="height:6px" id="v5"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="stage">
+  <div id="idle">
+    <div id="idle-main">Dinlemeye Hazır</div>
+    <div id="idle-sub">Kontrol paneli → Başlat</div>
+  </div>
+  <div id="scroll-area"><div id="translations"></div></div>
+  <div id="partial-area"><div id="partial-text"></div></div>
+</div>
+
+<button id="toggle-btn" onclick="togglePanel()">
+  <svg id="toggle-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+  <span id="toggle-txt">Ayarlar</span>
+</button>
+
+<div id="panel">
+  <div class="p-head">
+    <span class="p-title">Kontrol</span>
+    <button class="p-close" onclick="togglePanel()">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="p-body">
+
+    <div class="p-section">
+      <div class="s-label">Kaynak</div>
+      <div class="s-row">
+        <button class="s-btn" id="src-local" onclick="setSource('local')">Local</button>
+        <button class="s-btn on" id="src-cloud" onclick="setSource('cloud')">Cloud</button>
+      </div>
+    </div>
+
+    <div class="p-section">
+      <div class="s-label">Ses Tanıma (STT)</div>
+      <div class="custom-select" id="cs-stt-engine"></div>
+      <div class="custom-select" id="cs-stt-lang"></div>
+    </div>
+
+    <div class="p-section">
+      <div class="s-label">Çeviri Motoru</div>
+      <div class="custom-select" id="cs-tr-engine"></div>
+      <div class="custom-select" id="cs-tr-model"></div>
+      <div class="s-label" style="margin-top:10px">Hedef Dil</div>
+      <div class="custom-select" id="cs-tr-lang"></div>
+    </div>
+
+    <div class="p-section">
+      <div class="s-label">Mikrofon</div>
+      <div class="custom-select" id="cs-mic"></div>
+    </div>
+
+    <div class="p-section">
+      <div class="s-label">Yazı Boyutu</div>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:4px;">
+        <span style="font-family:Barlow Condensed,sans-serif;font-size:12px;color:var(--text-sub)">A</span>
+        <input type="range" id="font-slider" min="28" max="120" value="70">
+        <span style="font-family:Barlow Condensed,sans-serif;font-size:18px;color:var(--text-sub)">A</span>
+        <span id="font-val">70px</span>
+      </div>
+    </div>
+
+    <div class="p-section">
+      <div class="s-label">Kontrol</div>
+      <button id="btn-start" onclick="startListening()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+        Dinlemeye Başla
+      </button>
+      <button id="btn-stop" onclick="stopListening()" disabled>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+        Durdur
+      </button>
+    </div>
+
+    <div class="p-section">
+      <div class="s-label">İstatistik</div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-num" id="st-seg">0</div><div class="stat-lbl">Segment</div></div>
+        <div class="stat-card"><div class="stat-num" id="st-dur">0:00</div><div class="stat-lbl">Süre</div></div>
+      </div>
+    </div>
+
+    <div class="p-section" style="padding-bottom:6px"><div class="s-label">Log</div></div>
+    <div id="log-area"></div>
+  </div>
+</div>
+
+<script>
+  let ws, mediaRecorder, actx, analyser, rafId;
+  let panelOpen = false;
+  let segs = 0, startTs = null, timerRef = null;
+  let currentFontSize = 70;
+  let appConfig = {};
+  let source = 'cloud';
+
+  // ── Custom Select ──
+  const selects = {};
+
+  function createCustomSelect(containerId, options, defaultValue, onChange, disabled=false) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+
+    const selected = document.createElement('div');
+    selected.className = 'cs-selected' + (disabled ? ' disabled' : '');
+
+    const label = document.createElement('span');
+    label.className = 'cs-label';
+    const found = options.find(o => o.value === defaultValue) || options[0];
+    label.textContent = found ? found.label : '';
+
+    const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    arrow.setAttribute('viewBox', '0 0 24 24');
+    arrow.setAttribute('fill', 'none');
+    arrow.setAttribute('stroke', 'currentColor');
+    arrow.setAttribute('stroke-width', '2.5');
+    arrow.classList.add('cs-arrow');
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', 'M6 9l6 6 6-6');
+    arrow.appendChild(path);
+
+    selected.appendChild(label);
+    selected.appendChild(arrow);
+
+    const dropdown = document.createElement('div');
+    dropdown.className = 'cs-dropdown';
+
+    let currentVal = found ? found.value : (options[0] ? options[0].value : '');
+
+    options.forEach(opt => {
+      const item = document.createElement('div');
+      item.className = 'cs-option' + (opt.value === currentVal ? ' selected' : '');
+      item.textContent = opt.label;
+      item.dataset.value = opt.value;
+      item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        currentVal = opt.value;
+        label.textContent = opt.label;
+        dropdown.querySelectorAll('.cs-option').forEach(o => o.classList.remove('selected'));
+        item.classList.add('selected');
+        closeDropdown();
+        if (onChange) onChange(opt.value);
+      });
+      dropdown.appendChild(item);
+    });
+
+    if (!disabled) {
+      selected.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = dropdown.classList.contains('open');
+        closeAllDropdowns();
+        if (!isOpen) {
+          dropdown.classList.add('open');
+          selected.classList.add('open');
+        }
+      });
+    }
+
+    container.appendChild(selected);
+    container.appendChild(dropdown);
+
+    selects[containerId] = {
+      getValue: () => currentVal,
+      setValue: (val) => {
+        const opt = options.find(o => o.value === val);
+        if (opt) { currentVal = val; label.textContent = opt.label; }
+      },
+      setDisabled: (d) => { selected.classList.toggle('disabled', d); }
+    };
+
+    return selects[containerId];
+  }
+
+  function closeDropdown() {
+    document.querySelectorAll('.cs-dropdown.open').forEach(d => d.classList.remove('open'));
+    document.querySelectorAll('.cs-selected.open').forEach(d => d.classList.remove('open'));
+  }
+
+  function closeAllDropdowns() { closeDropdown(); }
+
+  document.addEventListener('click', closeAllDropdowns);
+
+  function getVal(id) { return selects[id] ? selects[id].getValue() : ''; }
+
+  // ── Config ──
+  async function loadConfig() {
+    try {
+      const r = await fetch('/config');
+      appConfig = await r.json();
+      lg('Config yüklendi ✓', 'ok');
+      initUI();
+    } catch(e) {
+      lg('Config hatası: ' + e.message, 'er');
+    }
+  }
+
+  function initUI() {
+    if (!appConfig.allow_local) {
+      document.getElementById('src-local').disabled = true;
+      source = 'cloud';
+    }
+    updateSourceUI();
+    loadMics();
+  }
+
+  function setSource(s) {
+    if (s === 'local' && !appConfig.allow_local) return;
+    source = s;
+    document.getElementById('src-local').classList.toggle('on', s === 'local');
+    document.getElementById('src-cloud').classList.toggle('on', s === 'cloud');
+    updateSourceUI();
+  }
+
+  function updateSourceUI() {
+    // STT Engine
+    const sttEngines = source === 'cloud'
+      ? [{value:'deepgram', label:'Deepgram Nova-3'}]
+      : [{value:'whisper', label:'Whisper (Lokal)'}];
+
+    createCustomSelect('cs-stt-engine', sttEngines, sttEngines[0].value, () => updateSTTLang());
+
+    // TR Engine
+    const trEngines = source === 'cloud'
+      ? [{value:'openai', label:'OpenAI'}, {value:'anthropic', label:'Anthropic'}]
+      : [{value:'ollama', label:'Ollama (Lokal)'}];
+
+    createCustomSelect('cs-tr-engine', trEngines, trEngines[0].value, (v) => updateTRModel(v));
+
+    updateSTTLang();
+    updateTRModel(trEngines[0].value);
+    updateTRLang();
+  }
+
+  function updateSTTLang() {
+    const langs = (appConfig.stt_languages || []).map(l => ({value: l.code, label: l.name}));
+    createCustomSelect('cs-stt-lang', langs, 'en-US', () => updateTRLang());
+  }
+
+  function updateTRModel(engine) {
+    let models = [];
+    if (engine === 'openai') {
+      models = (appConfig.openai_models || []).map(m => ({value:m, label:m}));
+    } else if (engine === 'anthropic') {
+      models = (appConfig.anthropic_models || []).map(m => ({value:m, label:m}));
+    } else if (engine === 'ollama') {
+      models = [{value: appConfig.ollama_model || 'mistral', label: appConfig.ollama_model || 'mistral'}];
+    }
+    createCustomSelect('cs-tr-model', models, models[0]?.value, null, engine === 'ollama');
+  }
+
+  function updateTRLang() {
+    const sttLang = getVal('cs-stt-lang') || 'en-US';
+    const sttLangBase = sttLang.split('-')[0];
+
+    // Tüm dilleri göster — STT diliyle aynı olanı listenin sonuna koy
+    const langs = (appConfig.translation_languages || []).map(l => ({value: l.name, label: l.name, code: l.code}));
+
+    // Varsayılan: STT diliyle farklı olan ilk dil
+    const defaultLang = langs.find(l => l.code !== sttLangBase) || langs[0];
+
+    createCustomSelect('cs-tr-lang', langs, defaultLang?.value, null);
+  }
+
+  // ── Panel ──
+  function togglePanel() {
+    panelOpen = !panelOpen;
+    document.getElementById('panel').classList.toggle('open', panelOpen);
+    document.getElementById('stage').classList.toggle('shifted', panelOpen);
+    document.getElementById('toggle-btn').classList.toggle('shifted', panelOpen);
+  }
+
+  // ── Font ──
+  document.getElementById('font-slider').addEventListener('input', function() {
+    currentFontSize = parseInt(this.value);
+    document.getElementById('font-val').textContent = currentFontSize + 'px';
+    document.documentElement.style.setProperty('--font-size', currentFontSize + 'px');
+  });
+
+  // ── Mic ──
+  async function loadMics() {
+    try {
+      await navigator.mediaDevices.getUserMedia({audio:true});
+      const devs = await navigator.mediaDevices.enumerateDevices();
+      const opts = [{value:'', label:'Varsayılan'}];
+      devs.filter(d=>d.kind==='audioinput').forEach(d => {
+        opts.push({value:d.deviceId, label:d.label||'Mikrofon'});
+      });
+      createCustomSelect('cs-mic', opts, '', null);
+    } catch(e) {
+      createCustomSelect('cs-mic', [{value:'', label:'Varsayılan'}], '', null);
+    }
+  }
+
+  // ── Volume ──
+  function startVol(stream) {
+    actx = new AudioContext();
+    analyser = actx.createAnalyser();
+    analyser.fftSize = 256;
+    actx.createMediaStreamSource(stream).connect(analyser);
+    const data = new Uint8Array(analyser.frequencyBinCount);
+    const bars = [1,2,3,4,5].map(i=>document.getElementById('v'+i));
+    function tick() {
+      analyser.getByteFrequencyData(data);
+      const avg = data.slice(0,48).reduce((a,b)=>a+b,0)/48;
+      const on = avg > 12;
+      bars.forEach(b=>{
+        const h = on ? Math.max(3,Math.min(16,avg*0.12+Math.random()*6)) : 3+Math.random()*2;
+        b.style.height = h+'px'; b.classList.toggle('on', on);
+      });
+      rafId = requestAnimationFrame(tick);
+    }
+    tick();
+  }
+  function stopVol() {
+    if(rafId) cancelAnimationFrame(rafId);
+    if(actx) actx.close();
+    [1,2,3,4,5].forEach(i=>{ const b=document.getElementById('v'+i); b.classList.remove('on'); b.style.height='4px'; });
+  }
+
+  // ── Timer ──
+  function startTimer() {
+    startTs = Date.now();
+    timerRef = setInterval(()=>{
+      const s = Math.floor((Date.now()-startTs)/1000);
+      document.getElementById('st-dur').textContent = Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+    }, 1000);
+  }
+  function stopTimer() { clearInterval(timerRef); startTs=null; }
+
+  // ── Translations ──
+  function addTranslation(en, tr) {
+    document.getElementById('idle').classList.add('gone');
+    document.getElementById('partial-text').textContent = '';
+    segs++;
+    document.getElementById('st-seg').textContent = segs;
+
+    const container = document.getElementById('translations');
+    const div = document.createElement('div');
+    div.className = 'tr-item age-0';
+    div.innerHTML = `<div class="tr-turkish" style="font-size:${currentFontSize}px">${tr}</div><div class="tr-english">${en}</div>`;
+    container.appendChild(div);
+
+    const all = container.querySelectorAll('.tr-item');
+    all.forEach((el,i) => { el.className = 'tr-item age-'+Math.min(all.length-1-i, 3); });
+    while(container.children.length > 6) container.removeChild(container.firstChild);
+
+    const sa = document.getElementById('scroll-area');
+    sa.scrollTo({top: sa.scrollHeight, behavior:'smooth'});
+    lg('→ '+tr.slice(0,36)+'…', 'tr');
+  }
+
+  // ── WebSocket ──
+  async function startListening() {
+    document.getElementById('btn-start').disabled = true;
+    document.getElementById('btn-stop').disabled = false;
+    document.getElementById('status-dot').classList.add('live');
+    setStatus('Bağlanıyor...');
+
+    const params = {
+      source,
+      stt_engine: getVal('cs-stt-engine'),
+      stt_lang: getVal('cs-stt-lang'),
+      tr_engine: getVal('cs-tr-engine'),
+      tr_model: getVal('cs-tr-model'),
+      target_lang: getVal('cs-tr-lang'),
+    };
+
+    lg(`${params.stt_engine} → ${params.tr_engine} → ${params.target_lang}`, 'ok');
+
+    const proto = location.protocol==='https:' ? 'wss:' : 'ws:';
+    ws = new WebSocket(`${proto}//${location.host}/asr`);
+    ws.binaryType = 'arraybuffer';
+
+    ws.onopen = async () => {
+      ws.send(JSON.stringify(params));
+      setStatus('Dinleniyor');
+      lg('Bağlandı ✓', 'ok');
+
+      const deviceId = getVal('cs-mic');
+      const constraints = {audio: deviceId ? {deviceId:{exact:deviceId}} : true};
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        startVol(stream);
+        startTimer();
+        mediaRecorder = new MediaRecorder(stream, {mimeType:'audio/webm;codecs=opus'});
+        mediaRecorder.ondataavailable = (e) => {
+          if(e.data.size>0 && ws.readyState===WebSocket.OPEN) ws.send(e.data);
+        };
+        mediaRecorder.start(250);
+        lg('Kayıt başladı', 'ok');
+      } catch(e) { lg('Mikrofon: '+e.message, 'er'); }
+    };
+
+    ws.onmessage = ({data}) => {
+      const msg = JSON.parse(data);
+      if(msg.type==='partial') document.getElementById('partial-text').textContent = msg.text;
+      else if(msg.type==='translation') addTranslation(msg.english, msg.turkish);
+      else if(msg.type==='status') { setStatus(msg.msg); lg(msg.msg, 'ok'); }
+      else if(msg.type==='error') { lg('Hata: '+msg.msg, 'er'); setStatus('Hata!'); }
+    };
+
+    ws.onclose = () => { setStatus('Hazır'); document.getElementById('status-dot').classList.remove('live'); };
+    ws.onerror = () => lg('WS hatası', 'er');
+  }
+
+  function stopListening() {
+    if(mediaRecorder?.state!=='inactive') mediaRecorder?.stop();
+    if(ws) ws.close();
+    stopVol(); stopTimer();
+    document.getElementById('btn-start').disabled = false;
+    document.getElementById('btn-stop').disabled = true;
+    document.getElementById('status-dot').classList.remove('live');
+    setStatus('Hazır');
+    lg('Durduruldu.', 'ok');
+  }
+
+  function setStatus(t) { document.getElementById('status-label').textContent = t; }
+
+  function lg(msg, type='') {
+    const el = document.getElementById('log-area');
+    const d = document.createElement('div');
+    d.className = 'lg '+type;
+    d.textContent = new Date().toLocaleTimeString('tr')+'  '+msg;
+    el.appendChild(d);
+    el.scrollTop = el.scrollHeight;
+    if(el.children.length>100) el.removeChild(el.firstChild);
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if(e.code==='Space' && !['INPUT','BUTTON','SELECT'].includes(e.target.tagName)) {
+      e.preventDefault();
+      document.getElementById('btn-start').disabled ? stopListening() : startListening();
+    }
+  });
+
+  loadConfig();
+</script>
+</body>
+</html>
+
