@@ -147,6 +147,100 @@
   .lg.ok { color:rgba(61,220,132,0.6); }
   .lg.tr { color:rgba(200,169,106,0.6); }
   .lg.er { color:rgba(244,112,112,0.6); }
+
+/* ================================
+   MOBILE RESPONSIVE FIX
+   ================================ */
+@media (max-width: 700px) {
+  :root {
+    --panel-w: min(88vw, 360px);
+    --font-size: 56px;
+  }
+
+  #topbar {
+    height: 64px;
+    padding: 0 14px;
+    gap: 10px;
+  }
+
+  #tb-left {
+    min-width: 0;
+    flex: 1;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    line-height: 1.1;
+  }
+
+  #tb-text,
+  #tb-powered {
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    white-space: normal;
+  }
+
+  #tb-right {
+    flex-shrink: 0;
+  }
+
+  #status-pill {
+    padding: 5px 10px;
+    max-width: 150px;
+  }
+
+  #status-label {
+    font-size: 10px;
+  }
+
+  #vol-bars {
+    display: none;
+  }
+
+  #scroll-area {
+    padding: 72px 8vw 120px;
+  }
+
+  .tr-turkish {
+    font-size: clamp(44px, 14vw, 64px) !important;
+    line-height: 1.05;
+    word-break: normal;
+    overflow-wrap: break-word;
+  }
+
+  .tr-english {
+    font-size: 14px;
+  }
+
+  #partial-area {
+    left: 8vw;
+    right: 8vw;
+  }
+
+  #stage.shifted {
+    padding-right: 0;
+  }
+
+  #stage.shifted #partial-area {
+    right: 8vw;
+  }
+}
+
+@media (max-width: 430px) {
+  #tb-text {
+    max-width: 210px;
+  }
+
+  #tb-powered {
+    display: none;
+  }
+
+  #status-pill {
+    max-width: 130px;
+  }
+
+  .tr-turkish {
+    font-size: clamp(42px, 15vw, 58px) !important;
+  }
+}
 </style>
 </head>
 <body>
@@ -608,4 +702,5 @@
 </script>
 </body>
 </html>
+
 
