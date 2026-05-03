@@ -370,6 +370,201 @@
     max-width: 70px !important;
   }
 }
+
+/* ================================
+   MOBILE FINAL SAFE VIEW FIX V2
+   ================================ */
+@media (max-width: 700px) {
+
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+  }
+
+  #stage {
+    width: 100vw !important;
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    overflow: hidden !important;
+  }
+
+  #topbar {
+    height: 86px !important;
+    min-height: 86px !important;
+    padding: 12px 10px 8px 12px !important;
+
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    grid-template-rows: auto auto !important;
+    align-items: start !important;
+    gap: 4px 8px !important;
+
+    box-sizing: border-box !important;
+  }
+
+  #tb-left {
+    grid-column: 1 / 2 !important;
+    grid-row: 1 / 3 !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 7px !important;
+
+    min-width: 0 !important;
+    max-width: calc(100vw - 118px) !important;
+    overflow: hidden !important;
+  }
+
+  #tb-text {
+    display: block !important;
+    font-size: 12px !important;
+    line-height: 1.25 !important;
+    letter-spacing: 0.10em !important;
+    white-space: nowrap !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  #tb-powered {
+    display: block !important;
+    font-size: 11px !important;
+    line-height: 1.2 !important;
+    letter-spacing: 0.09em !important;
+    white-space: nowrap !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    opacity: 0.75 !important;
+  }
+
+  #tb-right {
+    grid-column: 2 / 3 !important;
+    grid-row: 1 / 2 !important;
+    position: static !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: flex-start !important;
+  }
+
+  #status-pill {
+    width: auto !important;
+    min-width: 64px !important;
+    max-width: 96px !important;
+    height: 26px !important;
+    padding: 0 8px !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+
+  #status-label {
+    display: block !important;
+    max-width: 72px !important;
+    font-size: 9px !important;
+    line-height: 1 !important;
+    letter-spacing: 0.07em !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  #vol-bars {
+    display: none !important;
+  }
+
+  #scroll-area {
+    height: calc(100dvh - 86px) !important;
+    max-height: calc(100dvh - 86px) !important;
+    padding:
+      24px
+      7vw
+      calc(34px + env(safe-area-inset-bottom, 0px))
+      7vw !important;
+    overflow-y: auto !important;
+    box-sizing: border-box !important;
+  }
+
+  #empty-state {
+    min-height: calc(100dvh - 86px - 58px) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    padding: 0 20px !important;
+    box-sizing: border-box !important;
+    text-align: center !important;
+  }
+
+  #empty-title {
+    font-size: clamp(28px, 8.4vw, 40px) !important;
+    line-height: 1.12 !important;
+    letter-spacing: 0.07em !important;
+  }
+
+  #empty-subtitle {
+    font-size: 11px !important;
+    line-height: 1.35 !important;
+    letter-spacing: 0.10em !important;
+  }
+
+  .tr-turkish {
+    font-size: clamp(32px, 10.5vw, 48px) !important;
+    line-height: 1.08 !important;
+  }
+
+  .tr-english {
+    font-size: 14px !important;
+    line-height: 1.45 !important;
+  }
+
+  #partial-area {
+    left: 7vw !important;
+    right: 7vw !important;
+    bottom: calc(18px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+
+@media (max-width: 390px) {
+  #topbar {
+    height: 88px !important;
+    min-height: 88px !important;
+  }
+
+  #scroll-area {
+    height: calc(100dvh - 88px) !important;
+    max-height: calc(100dvh - 88px) !important;
+  }
+
+  #tb-left {
+    max-width: calc(100vw - 104px) !important;
+  }
+
+  #tb-text {
+    font-size: 11px !important;
+    letter-spacing: 0.08em !important;
+  }
+
+  #tb-powered {
+    font-size: 10px !important;
+    letter-spacing: 0.07em !important;
+  }
+
+  #status-pill {
+    max-width: 82px !important;
+  }
+
+  #status-label {
+    max-width: 62px !important;
+    font-size: 8.5px !important;
+  }
+}
 </style>
 </head>
 <body>
@@ -831,6 +1026,7 @@
 </script>
 </body>
 </html>
+
 
 
 
