@@ -35,11 +35,20 @@ PORT = int(os.getenv("PORT", "8001"))
 
 # --- Diller ---
 STT_LANGUAGES = [
+    {"code": "tr", "name": "Türkçe"},
     {"code": "en-US", "name": "İngilizce"},
-    {"code": "tr", "name": "Türkçe"}
+    {"code": "de", "name": "Almanca"},
+    {"code": "fr", "name": "Fransızca"},
+    {"code": "es", "name": "İspanyolca"},
+    {"code": "it", "name": "İtalyanca"},
+    {"code": "ar", "name": "Arapça"},
 ]
-
 TRANSLATION_LANGUAGES = [
     {"code": "tr", "name": "Türkçe"},
-    {"code": "en", "name": "İngilizce"}
+    {"code": "en", "name": "İngilizce"},
+    {"code": "de", "name": "Almanca"},
+    {"code": "fr", "name": "Fransızca"},
+    {"code": "es", "name": "İspanyolca"},
+    {"code": "it", "name": "İtalyanca"},
+    {"code": "ar", "name": "Arapça"},
 ]
