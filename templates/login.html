@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SimultanePro — Giriş</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #060606;
+    --surface: #0f0f0f;
+    --surface2: #161616;
+    --border: rgba(255,255,255,0.06);
+    --text: #f2efe9;
+    --text-dim: rgba(242,239,233,0.4);
+    --text-sub: rgba(242,239,233,0.15);
+    --gold: #c8a96a;
+    --gold-dim: rgba(200,169,106,0.12);
+    --red: #f47070;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .brand {
+    margin-bottom: 40px;
+    text-align: center;
+  }
+  .brand-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .brand-sep {
+    width: 1px;
+    height: 32px;
+    background: var(--border);
+    margin: 14px auto;
+  }
+  .brand-powered {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-sub);
+  }
+
+  .card {
+    width: 340px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .card-head {
+    padding: 18px 24px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .card-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .card-body {
+    padding: 24px;
+  }
+
+  .field {
+    margin-bottom: 14px;
+  }
+  .field:last-of-type {
+    margin-bottom: 0;
+  }
+  .field-label {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-sub);
+    margin-bottom: 7px;
+  }
+  .field input {
+    width: 100%;
+    padding: 10px 13px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .field input:focus {
+    border-color: rgba(200,169,106,0.4);
+  }
+  .field input::placeholder {
+    color: var(--text-sub);
+  }
+
+  .login-error {
+    background: rgba(244,112,112,0.08);
+    border: 1px solid rgba(244,112,112,0.25);
+    border-radius: 6px;
+    padding: 9px 13px;
+    font-size: 12px;
+    color: var(--red);
+    margin-bottom: 16px;
+    letter-spacing: 0.02em;
+  }
+
+  .btn-submit {
+    width: 100%;
+    margin-top: 20px;
+    padding: 12px;
+    border-radius: 7px;
+    border: none;
+    background: var(--gold);
+    color: #060606;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  .btn-submit:hover {
+    background: #d4b47a;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(200,169,106,0.25);
+  }
+  .btn-submit:active {
+    transform: translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<div class="brand">
+  <div class="brand-name">Red &amp; More Events &nbsp;·&nbsp; SimultanePro</div>
+  <div class="brand-sep"></div>
+  <div class="brand-powered">Powered by Viselab</div>
+</div>
+
+<div class="card">
+  <div class="card-head">
+    <span class="card-title">Giriş</span>
+  </div>
+  <div class="card-body">
+    <!--ERROR-->
+    <form method="post" action="/login">
+      <div class="field">
+        <div class="field-label">Kullanıcı Adı</div>
+        <input type="text" name="username" placeholder="kullanıcı adı" autocomplete="username" autofocus>
+      </div>
+      <div class="field">
+        <div class="field-label">Şifre</div>
+        <input type="password" name="password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn-submit">Giriş Yap</button>
+    </form>
+  </div>
+</div>
+
+</body>
+</html>

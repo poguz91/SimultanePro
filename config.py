@@ -29,6 +29,11 @@ WHISPER_COMPUTE_TYPE = "int8"
 OLLAMA_MODEL = "mistral"
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
 
+# --- Kimlik Doğrulama ---
+AUTH_USERNAME = os.getenv("AUTH_USERNAME", "admin")
+AUTH_PASSWORD = os.getenv("AUTH_PASSWORD", "")
+SECRET_KEY = os.getenv("SECRET_KEY", "changeme-please-set-in-env")
+
 # --- Sunucu ---
 HOST = "0.0.0.0"
 PORT = int(os.getenv("PORT", "8001"))

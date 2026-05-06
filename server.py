@@ -3,9 +3,10 @@ import json
 import logging
 import os
 import websockets
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request, Form
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
+from starlette.middleware.sessions import SessionMiddleware
 from contextlib import asynccontextmanager
 import config
 
@@ -265,15 +266,43 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(lifespan=lifespan)
+app.add_middleware(SessionMiddleware, secret_key=config.SECRET_KEY)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
+def is_authenticated(request: Request) -> bool:
+    return request.session.get("authenticated") is True
+
+@app.get("/login")
+async def login_page(request: Request, error: str = ""):
+    with open("templates/login.html", "r", encoding="utf-8") as f:
+        html = f.read()
+    if error:
+        html = html.replace("<!--ERROR-->", '<div class="login-error">Kullanıcı adı veya şifre hatalı</div>')
+    return HTMLResponse(html)
+
+@app.post("/login")
+async def login(request: Request, username: str = Form(...), password: str = Form(...)):
+    if username == config.AUTH_USERNAME and password == config.AUTH_PASSWORD:
+        request.session["authenticated"] = True
+        return RedirectResponse(url="/", status_code=303)
+    return RedirectResponse(url="/login?error=1", status_code=303)
+
+@app.get("/logout")
+async def logout(request: Request):
+    request.session.clear()
+    return RedirectResponse(url="/login", status_code=303)
+
 @app.get("/")
-async def get():
+async def get(request: Request):
+    if not is_authenticated(request):
+        return RedirectResponse(url="/login", status_code=303)
     with open("templates/panel.html", "r", encoding="utf-8") as f:
         return HTMLResponse(f.read())
 
 @app.get("/config")
-async def get_config():
+async def get_config(request: Request):
+    if not is_authenticated(request):
+        return RedirectResponse(url="/login", status_code=303)
     return {
         "allow_local": config.ALLOW_LOCAL,
         "stt_languages": config.STT_LANGUAGES,
